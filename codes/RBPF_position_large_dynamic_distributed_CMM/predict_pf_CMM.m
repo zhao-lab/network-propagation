@@ -1,0 +1,44 @@
+function predict_pf_CMM(sigma_a2,sigma_b2,sigma_d2,deltat,N,Np,Nsv,hor_DLP)
+%sigma_x and sigma_x_dot are the variance of unmodelled acceleration variance alone the lane
+%sigma_b,sigma_b_dot are variance of clock bias
+global pf;
+s_y=0.01;   %scaling factor for the lateral acceleration
+Q_a=[sigma_a2*0.25*deltat^4, sigma_a2*0.5*deltat^3;
+    sigma_a2*0.5*deltat^3,  sigma_a2*deltat^2];
+Q_c=[sigma_b2*deltat^2+0.25*sigma_d2*deltat^4,0.5*sigma_d2*deltat^3;
+    0.5*sigma_d2*deltat^3, sigma_d2*deltat^2];
+% Q_m=[sigma_m2*deltat^2+0.25*sigma_md2*deltat^4,0.5*sigma_md2*deltat^3;
+%     0.5*sigma_md2*deltat^3, sigma_md2*deltat^2];   %Noted that the sigma_a2 is of higher order in deltat, this is to account for the truncation error in the propagation equation
+Sigma(1:2,1:2)=Q_a;  %lanewise
+Sigma(3:4,3:4)=s_y*Q_a;  %lateral
+%Sigma(5:6,5:6)=Q_c;
+Sigma_2(1:2,1:2)=s_y*Q_a;  %lanewise
+Sigma_2(3:4,3:4)=Q_a;  %lateral
+%Sigma_2(5:6,5:6)=Q_c;
+A=[1 deltat;
+    0 1];
+aug_A=zeros(4,4);
+aug_A(1:2,1:2)=A;
+aug_A(3:4,3:4)=A;
+%aug_A(5:6,5:6)=A;
+% for k=1:(EKF.N-6)/2
+%     Sigma(6+2*k-1:6+2*k,6+2*k-1:6+2*k)=Q_m;
+% end
+%prediction
+for k=1:N
+for j=1:length(pf{k})
+    pf{k}(j).common=pf{k}(j).common+deltat*randn(Nsv,1)*5;
+    for i=1:N
+    pf{k}(j).mu{i}=aug_A*pf{k}(j).mu{i};
+    pf{k}(j).cov{i}=aug_A*pf{k}(j).cov{i}*aug_A.';
+    if mod(i,4)==1|mod(i,4)==2
+    pf{k}(j).cov{i}=pf{k}(j).cov{i}+Sigma; 
+    end
+    if mod(i,4)==3|mod(i,4)==0
+    pf{k}(j).cov{i}=pf{k}(j).cov{i}+Sigma_2;  
+    end
+    end
+end
+end
+   
+end

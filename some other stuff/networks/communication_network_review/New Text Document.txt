@@ -1,0 +1,3 @@
+Power Allocation and Spectrum Sharing in Wireless Networks_An Implementation Theory Approach:
+Solve a resource allocation problem using Implementation theory, when agents have partial info & want to maximize their own utility (game theoretic approach),
+
