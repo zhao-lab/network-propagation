@@ -47,18 +47,18 @@ for i = 1:5:num_epochs,  %Only processing every 5th sample to speed up this demo
             svenu = xyz2enu(svxyz,estusr(1:3));     % Convert the satellite position to east-north-up (i.e., local level) coordinates
             el = (180/pi)*atan(svenu(3)/norm(svenu(1:2)));
             if el >= maskangle,
-               k = k + 1;       % counter for the satellites being utilized in this epoch
-               pL1 = P1(id(j),i) + sv_clk(id(j));    % P-code on L1 pseudorange
-               pL2 = P2(id(j),i) + sv_clk(id(j));    % P-code on L2 pseudorange
-               prvec(k) = pL1;
-               if i > 1,
-                  dualcorr = ( (1227.6^2)/(1575.42^2 - 1227.6^2) )*( pL1 - pL2 );  % The dual-freq iono correction
-                  tropd = tropocorr(svxyz,estusr(1:3));    % Calculate the tropospheric correction
-                  prvec(k) = prvec(k) + dualcorr - tropd;     % Adjust the pseudorange for the iono and tropo corrections
-               end
-               svxyzr = erotcorr(svxyz,prvec(k));   % Adjust satellite position coordinates for earth rotation correction
-               svxyzmat(k,:) = svxyzr';
-               svvis(id(j),i) = 1;
+                k = k + 1;       % counter for the satellites being utilized in this epoch
+                pL1 = P1(id(j),i) + sv_clk(id(j));    % P-code on L1 pseudorange
+                pL2 = P2(id(j),i) + sv_clk(id(j));    % P-code on L2 pseudorange
+                prvec(k) = pL1;
+                if i > 1,
+                    dualcorr = ( (1227.6^2)/(1575.42^2 - 1227.6^2) )*( pL1 - pL2 );  % The dual-freq iono correction
+                    tropd = tropocorr(svxyz,estusr(1:3));    % Calculate the tropospheric correction
+                    prvec(k) = prvec(k) + dualcorr - tropd;     % Adjust the pseudorange for the iono and tropo corrections
+                end
+                svxyzr = erotcorr(svxyz,prvec(k));   % Adjust satellite position coordinates for earth rotation correction
+                svxyzmat(k,:) = svxyzr';
+                svvis(id(j),i) = 1;
             end
         end
     end
