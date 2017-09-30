@@ -3,7 +3,7 @@
 clear all
 close all
 
-file_path = '../StaNAV_commercial_code/satnav3p04';
+file_path = './support_files';
 addpath(file_path)
 % backup_path = './backup'
 % addpath(backup_path)

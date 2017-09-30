@@ -4,7 +4,7 @@ clear all
 close all
 N=4; % # of total vehicles
 
-file_path = '../StaNAV_commercial_code/satnav3p04';
+file_path = './support_files';
 addpath(file_path)
 
 load('distance_and_gradient.mat');  %contains grid_size, distance and gradient of distance from road centers
