@@ -39,6 +39,7 @@ usrenu{1}(1:Ns,1)=(6:velocity*deltat:6+velocity*deltat*(Ns-1))';
 
 usrenu{1}(1:Ns,2)=50-lane_width/2;
 usrenu{1}(1:Ns,3)=0;
+
 % for k=1:3
 % usrenu{k}(1:Ns,1)=(6:velocity:6+velocity*(Ns-1))';
 % usrenu{k}(1:Ns,2)=50-lane_width/2;
@@ -156,7 +157,9 @@ state=[state,EKF.mu];
     %when use Kalman filter
     %plotSamples([pf(:,1)+state_mean{1}(1,1),pf(:,2)+state_mean{1}(2,1)],'r');  %plot the estimated position sample of 1st vehicle
     %plotcov2d(mu(1)+state_mean{1}(1,1),mu(2)+state_mean{1}(2,1),cov,'g',0,0,0,3);  %plot the true position of vehicle as a circle
-    axis equal;
+%     axis equal;
+    xlim([0,150]);
+    ylim([46.5,49.5]);
     pause(0.01);
  	% waitbar(i/EndLoop)   
 end  %end (for i = 1:Ns)

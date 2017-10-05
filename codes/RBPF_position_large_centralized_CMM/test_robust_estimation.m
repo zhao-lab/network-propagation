@@ -12,7 +12,7 @@ loadgps
 i=0;
 randn('state',9083247);
 bar1 = waitbar(0,'Calculating Position...   ');
-for t = 41000:1:41200,
+for t = 41000:1:41200
     i=i+1;
     [svxyzmat,svid] = gensv(usrxyz,t,2);  % Note the mask angle is set to 2 degrees
     [prvec,adrvec,pr_err_vec(i,:)] = genrng(1,usrxyz,svxyzmat,svid,t,[1 1 0 1 1],[],mpmat);

@@ -11,7 +11,7 @@ N=1; % # of total vehicles
 
 lane_width=3.5;   %width of a single lane
 vehicle_width=1.8;  %use vehicle width to increase the positioning accuracy, it is assumed that the GPS receiver locates at the center of the vehicle
-velocity=2.5;  %vehicle velocity
+velocity=9.5;  %vehicle velocity
 Ns=40;  % #of simulation time points
 % Np=500; % #of particles
 mpmat=cell(N);   %multipath error time history for N vehicles
@@ -64,8 +64,11 @@ for i = 1:Ns  %draw the first step
     figure(1);
     clf;
     plotcov2d(usrenu{1}(i,1),usrenu{1}(i,2),[1,0;0,1],'r',0,0,0,1);  %plot the true position of vehicle as a circle
+%    plotcov2d(usrenu{2}(i,1),usrenu{2}(i,2),[1,0;0,1],'r',0,0,0,1);  %plot the true position of vehicle as a circle
     axis([0,30,35,65]);
     axis equal;
+%     legend('true position')
+    xlim([0,50]);
     hold on
      
     
@@ -126,6 +129,7 @@ for i = 1:Ns  %draw the first step
     %calculate the determinant of the variance of the true error, this is expected to be related with the estimation covariance
 %     plotSamples([pf(:,1)+estenu{1}(i,1),pf(:,2)+estenu{1}(i,2)],'r');  %plot the estimated position sample of 1st vehicle
     plotcov2d(state_mean(1),state_mean(2),state_cov(1:2,1:2),'g',0,0,0,3);  %plot position estimated by Kalman filter
+    legend('true position','r','r','GPS position','b','b','KF estimated position','g');
     pause(1);
     hold off
  	% waitbar(i/EndLoop)   

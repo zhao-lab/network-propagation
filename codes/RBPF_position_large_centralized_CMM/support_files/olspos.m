@@ -34,7 +34,7 @@ if nargin<3,initpos=[0 0 0 0];end
 if nargin<2,error('insufficient number of input arguments'),end
 [m,n]=size(initpos);
 if m>n, estusr=initpos';else,estusr=initpos;end
-if max(size(estusr))<3,
+if max(size(estusr))<3
    error('must define at least 3 dimensions in INITPOS')
 end
 if max(size(estusr))<4,estusr=[estusr 0];end
@@ -42,8 +42,8 @@ numvis=max(size(svxyzmat));
 beta=[1e9 1e9 1e9 1e9];
 maxiter=10;
 iter=0;
-while ((iter<maxiter)&(norm(beta)>tol)),
-    for N = 1:numvis,
+while ((iter<maxiter)&&(norm(beta)>tol))
+    for N = 1:numvis
 	pr0 = norm(svxyzmat(N,:)-estusr(1:3));
 	y(N,1) = prvec(N) - pr0 - estusr(4);
     end,

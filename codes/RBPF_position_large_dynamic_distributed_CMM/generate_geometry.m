@@ -3,11 +3,13 @@ nodes=[50,0;
     50,100;
     0,50;
     100,50];   %x and y coordinates of nodes representing the roads, the length of nodes can be a very large number
+% Refine the nodes on the roads for computing the distance of each points on
+% the grid map to the roads centers
 Refine_nodes(1:500,1)=50;
 Refine_nodes(1:500,2)=0.2:0.2:100;
 Refine_nodes(501:1000,1)=0.2:0.2:100;
-Refine_nodes(501:1000,2)=50;    %Refine the nodes on the roads for computing the distance of each points on the grid 
-%map to the roads centers
+Refine_nodes(501:1000,2)=50;    
+
 grid_size=0.5;
 Nx=100/grid_size+1;
 Ny=100/grid_size+1;

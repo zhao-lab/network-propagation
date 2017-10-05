@@ -9,14 +9,18 @@
 clear all
 load most_sparse.mat;
 vehicle=new_vehicle;
+
+file_path = './support_files';
+addpath(file_path)
+
 for tt=1:3
 %created by macshen
 tt
 clearvars -except record_err tt vehicle
 close all
 global pf;
-map_angle=vehicle(:,3);    %randomly generate map_angle
-N=length(vehicle(:,1)); % # of total vehicles 
+map_angle = vehicle(:,3);    %randomly generate map_angle
+N = length(vehicle(:,1)); % # of total vehicles 
 % load('distance_and_gradient.mat');  %contains grid_size, distance and gradient of distance from road centers
 % global dis;
 % global grad;   %global quantities to share with sub-function for interpolating distances
@@ -24,7 +28,7 @@ N=length(vehicle(:,1)); % # of total vehicles
 % grad=grad_dis;
 
 Ng=2000;   % # of discrete grids of multipath estimation for each lane
-mp_gridsize=0.25;   % gridsize*Ng=lane length
+mp_gridsize=0.25;   % gridsize*Ng = lane length
 lane_width=3.5;   %width of a single lane
 vehicle_width=1.8;  %use vehicle width to increase the positioning accuracy, it is assumed that the GPS receiver locates at the center of the vehicle
 velocity=0.1;  %vehicle velocity
@@ -210,6 +214,8 @@ end
     plotcov2d(pf(k).mu{1}(1),pf(k).mu{1}(3),pf(k).cov{1}([1,3],[1,3]),'b',0,0,0,3);  %plot the estimated position of vehicle as a circle
     end
     plotcov2d(mu(1),mu(2),cov,'g',0,0,0,3);
+    xlim([-3,3]);
+    ylim([-4,4]);
     err_CMM(i)=norm(mu'-usrenu{1}(i,1:2));
     deter(i)=det(cov);
     %when not Kalman
@@ -218,7 +224,7 @@ end
     %when use Kalman filter
     %plotSamples([pf(:,1)+state_mean{1}(1,1),pf(:,2)+state_mean{1}(2,1)],'r');  %plot the estimated position sample of 1st vehicle
     %plotcov2d(mu(1)+state_mean{1}(1,1),mu(2)+state_mean{1}(2,1),cov,'g',0,0,0,3);  %plot the true position of vehicle as a circle
-    axis equal;
+    % axis equal;
     pause(0.0001);
  	% waitbar(i/EndLoop)   
 end  %end (for i = 1:Ns)

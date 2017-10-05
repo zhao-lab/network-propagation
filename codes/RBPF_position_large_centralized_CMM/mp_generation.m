@@ -1,4 +1,4 @@
-function map_mp=mp_generation(Nsv,indicator,Ng,grid_size);
+function map_mp=mp_generation(Nsv,indicator,Ng,grid_size)
 %grid_size=2;   %lanewise size of the map within which the mp error keeps constant 
 max_fre=1;  %maximum spatial frequency for mp error
 Nf=50;  % #of frequencies

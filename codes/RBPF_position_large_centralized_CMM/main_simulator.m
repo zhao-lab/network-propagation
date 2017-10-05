@@ -80,10 +80,14 @@ for i = 1:Ns  %draw the first step
     pf(:,1:2)=mvnrnd([0,0],9*P0(1:2,1:2),Np);   %try Gaussian sampling, this should be modified later
     figure(1);
     clf;
+    xlim([-20,40]);
+    ylim([20,80]);
     hold on
     
     plotcov2d(estenu{1}(i,1),estenu{1}(i,2),[1,0;0,1],'r',0,0,0,3);  %plot the GPS estimated position of vehicle as a circle
+    legend('GPS estimimated')
     plotSamples([pf(:,1)+estenu{1}(i,1),pf(:,2)+estenu{1}(i,2)],'b');  %plot the hypothetical position of 1st vehicle before particle filter
+    legend('GPS estimimated','hypotheticcal')
     
     for k=1:N  %pf loop for each vehicle
         sigma_multipath2=1.67*noise_scaling_factor(4)^2;   %variance of mutlipath,calculated from the multipath noise in the simulation
@@ -137,7 +141,7 @@ for i = 1:Ns  %draw the first step
     %plotSamples([pf(:,1)+state_mean{1}(1,1),pf(:,2)+state_mean{1}(2,1)],'r');  %plot the estimated position sample of 1st vehicle
     %plotcov2d(mu(1)+state_mean{1}(1,1),mu(2)+state_mean{1}(2,1),cov,'g',0,0,0,3);  %plot the true position of vehicle as a circle
     estimation_err(i)=norm([mu(1)+estenu{1}(i,1)-usrenu{1}(i,1),mu(2)+estenu{1}(i,2)-usrenu{1}(i,2)]);
-    axis equal;
+    % axis equal;
     pause(0.01);
     hold off
     % waitbar(i/EndLoop)
