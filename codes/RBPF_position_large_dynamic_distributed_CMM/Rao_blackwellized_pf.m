@@ -44,7 +44,7 @@ for tt=1:1
     
     %A_con=(eye(N)+rand(N))>0.75;
     
-    %redundent
+    %redundant
     mpmat=cell(N,1);   %multipath error time history for N vehicles
     for i=1:N
         %generate multipath error, use different random seeds
@@ -147,7 +147,7 @@ for tt=1:1
     end
     
     for k=1:N
-        com_list{k}=[k];
+        com_list{k}=k;
     end
     
     for i = 1:Ns  %draw the first step
@@ -202,10 +202,8 @@ for tt=1:1
             for j=1:length(com_list{k})
                 A_sparse(k,com_list{k}(j))=1;
             end
-        end
-        
-        
-        
+        end      
+     
         t = t + deltat;
         
         for k=1:N   %GPS measurement loop for all the vehicles
@@ -418,23 +416,32 @@ end
 %% PLOT ALL ERRORS AND CORVARIANCE
 figure;
 plot(rt_var_err,'linewidth',2)
-title('different types of CMM error')
+title('Different types of CMM error')
 hold on;
 plot(rt_ave_sq_err,'linewidth',2)
 hold on;
 plot(var_err_CMM,'linewidth',2)
 hold on;
 plot(ave_sq_err,'linewidth',2)
-legend('rt-var-err','rt-ave-sq-err','var-err-CMM','ave-sq-err')
+hold on;
+plot(norm_ave_err,'linewidth',2)
+legend('rt-var-err','rt-ave-sq-err','var-err-CMM','ave-sq-err','norm-ave-err')
+%%
 figure;
 plot(ave_err_CMM,'linewidth',2)
-legend('ave-err-CMM_1','ave-err-CMM_2')
-title('Average Error for CMM_1 and CMM_2')
+legend('ave-err-CMM_x','ave-err-CMM_y')
+title('Average Error for CMM_x and CMM_y')
 % figure;
 % plot(common_error,'linewidth',2)
 % legend('common-error_1','common-error_2','common-error_3','common-error_4', ...
 %     'common-error_5','common-error_6')
 figure;
 plot(common_error_position','linewidth',2)
-legend('common-error-position_1','common-error-position_2')
+legend('common-error-position_x','common-error-position_y')
 title('Common Error for Longitude and Lateral Position')
+figure;
+plot(com_err(1,:),'-o','linewidth',2);
+hold on;
+plot(com_err(2,:),'-o','linewidth',2);
+legend('com-err_x','com-err_y')
+title('Com-Err for cars in network')
