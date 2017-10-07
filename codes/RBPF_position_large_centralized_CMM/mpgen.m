@@ -6,19 +6,20 @@ function delta=mpgen(numsat,duration,model,mpseed)
 %
 %   INPUTS
 %       numsat = number of multipath error traces (i.e., number of 
-%                satellites for which multipath is to be generated)
-%	duration = duration of error traces in seconds (must be an integer)
+%                satellites for which multipath is to be generated);
+%       duration = duration of error traces in seconds (must be an
+%       integer);
 %       model = Optional model choice for generation of 
 %               multipath.  Default is: model = 1
-%               1 = standard deviation is approximately 1.6 meters
-%		    time constant is approximately 2 minutes
-%               2 = standard deviation is approximately 0.40 meters
-%		    time constant is approximately 15 seconds
-%	mpseed = Optional seed for Gaussian random number generator.
+%               1 = standard deviation is approximately 1.6 meters;
+%                   time constant is approximately 2 minutes;
+%               2 = standard deviation is approximately 0.40 meters;
+%                   time constant is approximately 15 seconds;
+%       mpseed = Optional seed for Gaussian random number generator.
 %                Default setting is: mpseed = sum(100*clock).
 %
 %   OUTPUTS
-%       delta = zero-angle equivalent multipath error in meters
+%       delta = zero-angle equivalent multipath error in meters;
 %
 %   NOTE:  All error traces are generated at a rate of 1 Hz.
 
@@ -42,7 +43,7 @@ if nargin<2,error('insufficient number of input arguments'),end
           y = filter(b,a,x);
           delta(:,k) = y;
       end
-   end,
+   end
 %
 % Short time constant Autoregressive Model
    if model==2

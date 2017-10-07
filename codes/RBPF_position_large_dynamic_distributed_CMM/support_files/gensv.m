@@ -47,13 +47,13 @@ if isempty(orgxyz),enuflg=0;else,enuflg=1;end
 i = 0;
 numsv = max(size(SVIDV));
 svid = 0;
-for N = 1:numsv,
+for N = 1:numsv
    svxyz = svpos(RV(N),TOEV(N),MV(N),OMGV(N),INCLV(N),time);
    svenu = xyz2enu(svxyz,usrece);  % User is origin
    el = (180/pi)*atan2(svenu(3),norm(svenu(1:2)));   
-   if el > maskang,
+   if el > maskang
       i = i + 1;
-      if enuflg==0,
+      if enuflg==0
 	svxyzmat(i,:) = svxyz';      % ECEF position
       else
 	svxyzmat(i,:) = (xyz2enu(svxyz,orgxyz))';      % ENU position
@@ -61,8 +61,8 @@ for N = 1:numsv,
       svid(i) = SVIDV(N);
       elevation_angle(i)=el;%added by macshen, to output the elevation angle
       sigma2(i)=16+9/sin(elevation_angle(i)/180*pi)^2; %added by macshen, variance of the noise, reference Single-point Positioning with the Pseudorange of Single-frequency GPS Considering the Stochastic Model
-   end,
-end,
+   end
+end
 
 if nargin<5
     sv_number=length(svid);

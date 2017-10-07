@@ -426,7 +426,6 @@ plot(ave_sq_err,'linewidth',2)
 hold on;
 plot(norm_ave_err,'linewidth',2)
 legend('rt-var-err','rt-ave-sq-err','var-err-CMM','ave-sq-err','norm-ave-err')
-%%
 figure;
 plot(ave_err_CMM,'linewidth',2)
 legend('ave-err-CMM_x','ave-err-CMM_y')

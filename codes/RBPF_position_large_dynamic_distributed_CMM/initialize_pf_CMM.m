@@ -1,4 +1,4 @@
-function initialize_pf_CMM(Np,Nsv,N,common_error,v);
+function initialize_pf_CMM(Np,Nsv,N,common_error,v)
 global pf;
 for i=1:N
 for k=1:Np

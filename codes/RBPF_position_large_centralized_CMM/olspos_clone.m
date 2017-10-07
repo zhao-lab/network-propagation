@@ -8,7 +8,7 @@ function [estusr,H] = olspos_clone(prvec,svxyzmat,v_id,orgxyz,initpos,tol,weight
 %	prvec = vector of 'measured' pseudoranges for satellites
 %               specified in svxyzmat
 %	svxyzmat(i,1:3) = position of satellite i in user defined 
-%                         cartesian coordinates.
+%                     cartesian coordinates.
 %	initpos = optional argument.  Initial 'estimate' of user state:
 %                 three-dimensional position and clock offset
 %                 (in user defined coordinates).  Used to speed up 

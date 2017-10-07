@@ -1,6 +1,6 @@
 function [prvec,adrvec,pr_err_vec,common_error]=genrng_common_noise(rxid,usrxyz,svmat,svid,time,esf,...  %this function generate pr free of mp error
    samat,mpmat,freqc,TECmax,TECmin)
-%GENRNG Generate vector of 'measured' pseudoranges and accumulated
+% GENRNG Generate vector of 'measured' pseudoranges and accumulated
 %        delta ranges (i.e., integrated Doppler) to all
 %        visible satellites.
 %
@@ -17,7 +17,7 @@ function [prvec,adrvec,pr_err_vec,common_error]=genrng_common_noise(rxid,usrxyz,
 %       svid = vector of identification numbers for the visible satellites
 %              corresponding to svmat
 %       time = time of week in seconds
-%             esf = error flags and scaling.  If set to zero, error-free 
+%       esf = error flags and scaling.  If set to zero, error-free 
 %                pseudoranges are computed.  If ESF is any other scalar,
 %                all error sources are added (with default scaling) to the 
 %                true ranges to produce
@@ -167,24 +167,24 @@ function [prvec,adrvec,pr_err_vec,common_error]=genrng_common_noise(rxid,usrxyz,
 if nargin<11, TECmin=4e17; end
 if nargin<10, TECmax=1.6e18; end
 if nargin<9, freqc=1575.42; end
-if nargin<8,
+if nargin<8
    mpflg=0;
-elseif isempty(mpmat),
+elseif isempty(mpmat)
    mpflg=0;
-else,
+else
    mpflg=1;
 end
-if nargin<7,
+if nargin<7
    saflg=0;
-elseif isempty(samat),
+elseif isempty(samat)
    saflg=0;
-else,
+else
    saflg=1;
 end
 if nargin<6,error('insufficient number of input arguments'),end
 [m,n] = size(usrxyz);
 if m>n, usrpos=usrxyz';else,usrpos=usrxyz;end
-if max(size(esf))~=5,
+if max(size(esf))~=5
    if esf==0,esf=[0 0 0 0 0];else,esf=[1 1 1 1 1];end
 end
 if esf(3)==0, saflg=0; end
@@ -192,23 +192,23 @@ if esf(4)==0, mpflg=0; end
 %numvis = max(size(svmat));
 numvis = size(svmat,1);   %modified by macshen
 SAerr=0;prnois=0;adrnois=0;troperr=0;mperrpr=0;mperradr=0;ionoerr=0;
-for N = 1:numvis,
+for N = 1:numvis
    pr = norm(svmat(N,:)-usrpos);
-   if ((mpflg~=0)|(saflg~=0)),
+   if ((mpflg~=0)||(saflg~=0))
     tgpssec=1+time-3600*(fix(time/3600));t1=fix(tgpssec);
     K=svid(N);
-    if ( (saflg~=0) & (K<33) ),
+    if ( (saflg~=0) && (K<33) )
      SAerr=esf(3)*(samat(t1,K)+(tgpssec-t1)*(samat(t1+1,K)-samat(t1,K)));
-    end,
-    if mpflg~=0,
+    end
+    if mpflg~=0
      svenu=xyz2enu(svmat(N,:),usrxyz);
      beta=atan2(svenu(3),norm(svenu(1:2)));   %beta seems to be the elevation angle, noted by macshen
      sf=cos(beta);
 
      mperrpr=...
         sf*esf(4)*(mpmat(t1,K)+(tgpssec-t1)*(mpmat(t1+1,K)-mpmat(t1,K)));   
-    end,
-   end,
+    end
+   end
    if esf(1)~=0,prnois=esf(1)*randn;end
    if esf(2)~=0,troperr=esf(2)*tropgen(usrxyz,svmat(N,:));end
    if esf(5)~=0,ionoerr=...
@@ -227,10 +227,10 @@ for N = 1:numvis,
 %    end
    
    pr_err_vec(N)= prvec(N)-pr;  %added by macshen
-   if svid(N) < 50,
+   if svid(N) < 50
       lambda = 299792458/(freqc*1e6);
-   elseif svid(N) < 100,
-      if freqc==1575.42,
+   elseif svid(N) < 100
+      if freqc==1575.42
          Z=9;
       else
          Z=7;
@@ -243,5 +243,5 @@ for N = 1:numvis,
    if esf(1)~=0,adrnois=0.05*lambda*esf(1)*randn;end
    adrvec(N) = pr-10*rxid*rxid*svid(N)*lambda+SAerr+adrnois+...
                troperr+mperradr-ionoerr;
-end,
+end
 
