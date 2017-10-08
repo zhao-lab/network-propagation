@@ -38,7 +38,7 @@ if nargin<5,initpos=[0 0 0 0];end
 if nargin<2,error('insufficient number of input arguments'),end
 [m,n]=size(initpos);
 if m>n, estusr=initpos';else,estusr=initpos;end
-if max(size(estusr))<3,
+if max(size(estusr))<3
    error('must define at least 3 dimensions in INITPOS')
 end
 if max(size(estusr))<4,estusr=[estusr 0];end
@@ -46,13 +46,16 @@ numvis=max(size(svxyzmat));
 beta=[1e9 1e9 1e9 1e9];
 maxiter=10;
 iter=0;
-while ((iter<maxiter)&(norm(beta)>tol)),
-    for N = 1:numvis,
+while ((iter<maxiter)&&(norm(beta)>tol))
+    for N = 1:numvis
 	pr0 = norm(svxyzmat(N,:)-estusr(1:3));
 	y(N,1) = prvec(N) - pr0 - estusr(4);
-    end,
-    H = hmat(svxyzmat,estusr(1:3));
+    end
     
+    H = hmat(svxyzmat,estusr(1:3)); %hamt: outputs direction cosine matrix for GPS positioning
+    % check "help hmat"     
+    %the direction cosines (or directional cosines) of a vector are the cosines of the angles between the vector and the three coordinate axes. 
+
     if nargin<5
        beta = H\y;
     else

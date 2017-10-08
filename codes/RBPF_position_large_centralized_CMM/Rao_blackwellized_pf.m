@@ -35,7 +35,8 @@ for tt=1:3
     Ns=100;  % #of simulation time points
     Nsv=6;  %#of visible satellites
     Np=50; % #of particles
-    block_prob=0;
+    %     block_prob=0;
+    block_prob=0.2;
     
     %redundent
     mpmat=cell(N,1);   %multipath error time history for N vehicles
@@ -105,39 +106,39 @@ for tt=1:3
     %     map_mp=mp_generation(Nsv,[0,0,0,1,0,1],Ng,mp_gridsize);%generate mp according to geometry
     %     map_mp=abs(map_mp);
     %load('mp.mat');
-    % map_mp=[];
+    map_mp=[];
     %         sigma_m2=1;   %mp variance
     %         sigma_md2=1;   %mp drift variance
     
-%     % Comment this part if multipath error is neglected
-%     load('mp_x.mat');
-%     load('mp_y.mat');
-%     load('mp_30.mat');
-%     global mp_xg;
-%     global mp_yg;
-%     global LOS_xg;
-%     global LOS_yg;   %global variable shared with add_mp_wn
-%     
-%     
-%     for k=1:Nsv
-%     mp_x{k}=mp_x{k}+0.1*abs(randn(size(mp_x{k})));
-%     mp_y{k}=mp_y{k}+0.1*abs(randn(size(mp_y{k})));   %perturb to simulate diffraction
-%     wavelength=3*10^8/1575.42/10^6;   % L1 signal wavelength
-%     phase_x=2*pi*mp_x{k}/wavelength;
-%     phase_y=2*pi*mp_y{k}/wavelength;
-%     mp_x{k}=0.5*mp_x{k}.*cos(phase_x);
-%     mp_y{k}=0.5*mp_y{k}.*cos(phase_y);
-%     end
-%     mp_xg=mp_x;
-%     mp_yg=mp_y;
-%     LOS_xg=LOS_x;
-%     LOS_yg=LOS_y;
-%     for k=1:6
-%         mp_xg{k}=zeros(1920,40);
-%         mp_yg{k}=zeros(1920,40);
-%         LOS_xg{k}=ones(1920,40);
-%         LOS_yg{k}=ones(1920,40);
-%     end
+    %     % Comment this part if multipath error is neglected
+    %     load('mp_x.mat');
+    %     load('mp_y.mat');
+    %     load('mp_30.mat');
+    %     global mp_xg;
+    %     global mp_yg;
+    %     global LOS_xg;
+    %     global LOS_yg;   %global variable shared with add_mp_wn
+    %
+    %
+    %     for k=1:Nsv
+    %     mp_x{k}=mp_x{k}+0.1*abs(randn(size(mp_x{k})));
+    %     mp_y{k}=mp_y{k}+0.1*abs(randn(size(mp_y{k})));   %perturb to simulate diffraction
+    %     wavelength=3*10^8/1575.42/10^6;   % L1 signal wavelength
+    %     phase_x=2*pi*mp_x{k}/wavelength;
+    %     phase_y=2*pi*mp_y{k}/wavelength;
+    %     mp_x{k}=0.5*mp_x{k}.*cos(phase_x);
+    %     mp_y{k}=0.5*mp_y{k}.*cos(phase_y);
+    %     end
+    %     mp_xg=mp_x;
+    %     mp_yg=mp_y;
+    %     LOS_xg=LOS_x;
+    %     LOS_yg=LOS_y;
+    %     for k=1:6
+    %         mp_xg{k}=zeros(1920,40);
+    %         mp_yg{k}=zeros(1920,40);
+    %         LOS_xg{k}=ones(1920,40);
+    %         LOS_yg{k}=ones(1920,40);
+    %     end
     
     
     for i = 1:Ns  %draw the first step
@@ -182,7 +183,6 @@ for tt=1:3
         sigma_multipath2=1.67*noise_scaling_factor(4)^2;   %variance of mutlipath,calculated from the multipath noise in the simulation
         %         sigma_eta2=sigma_multipath2+sigma_thermal2;
         %         sigma_map2=0.01;  %variance of map inprecision, this might be larger for real map
-        
         
         if i==1   %for the first time step, initialize particles for ego-state estimation and multipath mitigation
             initialize_pf_CMM(Np,Nsv,N,common_error(i,:).',velocity);
@@ -238,8 +238,29 @@ for tt=1:3
     % end
     record_err(tt)=mean(err_CMM);
 end
-%% PLOT ALL ERRORS AND CORVARIANCE
 
+% %% Different types of error evaluation
+% % for i = 1:Ns
+% %       ave_err_CMM(i,1)=zeros(1,1);
+% %         var_err_CMM(i)=0;
+% %         ave_sq_err(i)=0;
+% %         for k=1:N
+% %             err_CMM(i,:)=mu'-usrenu(i,1:2);
+%             ave_err_CMM=err_CMM;
+% %             bias_x(i)=err_CMM(i,1);
+% %             bias_y(i)=err_CMM(i,2);
+%             err_norm(i)=norm(err_CMM(i,:));
+%             deter(i)=det(cov);
+% %         end
+%         for k=1:N
+%             var_err_CMM(i)=var_err_CMM(i)+norm((err_CMM{k}(i,:)-ave_err_CMM(i,1:2))')^2/N;
+%             ave_sq_err(i)=ave_sq_err(i)+norm(err_CMM{k}(i,:)')^2/N;
+%             norm_ave_err(i)=norm(ave_err_CMM(i,1:2)');
+%         end
+%         rt_var_err(i)=sqrt(var_err_CMM(i));
+%         rt_ave_sq_err(i)=sqrt(ave_sq_err(i));
+% end
+%% PLOT ALL ERRORS AND CORVARIANCE
 figure;
 % hold on;
 plot(common_error_position','linewidth',2)
@@ -255,4 +276,5 @@ plot(err_CMM','linewidth',2)
 % hold on;
 legend('err-CMM w/o mp')
 % legend('err-CMM least sparse', 'err-CMM medium sparse', 'err-CMM most sparse')
-title('Error for CMM, 24 vehicle network')
+title(strcat(num2str(N), ' vehicle network, Error for CMM,'))
+

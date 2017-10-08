@@ -69,8 +69,8 @@ function [prvec,adrvec,pr_err_vec,common_error]=genrng_common_noise(rxid,usrxyz,
 %               of total election content (default is 4*1e17)
 %
 %   OUTPUTS
-%            prvec = vector of 'measured' pseudoranges for satellites
-%               specified in svmat
+%      prvec = vector of 'measured' pseudoranges for satellites
+%              specified in svmat
 %      adrvec = vector of 'measured' accumulated delta ranges for
 %               satellites specified in svmat
 %

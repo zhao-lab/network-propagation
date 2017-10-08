@@ -28,15 +28,15 @@ aug_A(3:4,3:4)=A;
 for j=1:Np
     pf(j).common=pf(j).common+deltat*randn(Nsv,1)*5;
     for i=1:N
-    pf(j).mu{i}=aug_A*pf(j).mu{i};
-    pf(j).cov{i}=aug_A*pf(j).cov{i}*aug_A.';
-    if mod(i,4)==1|mod(i,4)==2
-    pf(j).cov{i}=pf(j).cov{i}+Sigma; 
-    end
-    if mod(i,4)==3|mod(i,4)==0
-    pf(j).cov{i}=pf(j).cov{i}+Sigma_2;  
-    end
+        pf(j).mu{i}=aug_A*pf(j).mu{i};
+        pf(j).cov{i}=aug_A*pf(j).cov{i}*aug_A.';
+        if mod(i,4)==1||mod(i,4)==2
+            pf(j).cov{i}=pf(j).cov{i}+Sigma;
+        end
+        if mod(i,4)==3||mod(i,4)==0
+            pf(j).cov{i}=pf(j).cov{i}+Sigma_2;
+        end
     end
 end
-   
+
 end
