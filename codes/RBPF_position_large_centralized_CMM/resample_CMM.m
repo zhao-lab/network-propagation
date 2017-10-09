@@ -1,4 +1,4 @@
-function resample_CMM
+function resample_CMM(distance_dyn)
 global pf;
 pf_copy=pf;
 % do some stuff here
@@ -26,5 +26,8 @@ for j=1:size_samples
 end
 for k=1:size_samples
     pf(k).weight=1/size_samples;
+    if distance_dyn > 3000
+        pf(k).weight=0.3*pf(k).weight;
+    end
 end
 end

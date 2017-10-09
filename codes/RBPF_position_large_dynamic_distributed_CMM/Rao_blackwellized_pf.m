@@ -368,11 +368,11 @@ for tt=1:1
         
         %calculate the determinant of the variance of the true error, this is expected to be related with the estimation covariance
         % REMEMBER: commented only for faster simulation
-%         plotcov2d(usrenu{1}(i,1),usrenu{1}(i,2),[1,0;0,1],'r',0,0,0,1);  %plot the true position of vehicle as a circle
-%         for k=1:Np
-%             plotcov2d(pf{1}(k).mu{1}(1),pf{1}(k).mu{1}(3),pf{1}(k).cov{1}([1,3],[1,3]),'b',0,0,0,3);  %plot the estimated position of vehicle as a circle
-%         end
-%         plotcov2d(mu{1}(1),mu{1}(2),cov{1},'g',0,0,0,3);
+        plotcov2d(usrenu{1}(i,1),usrenu{1}(i,2),[1,0;0,1],'r',0,0,0,1);  %plot the true position of vehicle as a circle
+        for k=1:Np
+            plotcov2d(pf{1}(k).mu{1}(1),pf{1}(k).mu{1}(3),pf{1}(k).cov{1}([1,3],[1,3]),'b',0,0,0,3);  %plot the estimated position of vehicle as a circle
+        end
+        plotcov2d(mu{1}(1),mu{1}(2),cov{1},'g',0,0,0,3);
         
         ave_err_CMM(i,1:2)=zeros(1,2);
         var_err_CMM(i)=0;

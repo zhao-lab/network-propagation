@@ -13,7 +13,10 @@ load vehicle_50.mat;
 file_path = './support_files';
 addpath(file_path)
 
-for tt=1:3
+% if medium or most sparse, add the followinng
+% vehicle = new_vehicle;
+
+for tt=1:1
     %created by macshen
     tt
     clearvars -except record_err tt vehicle
@@ -31,13 +34,32 @@ for tt=1:3
     mp_gridsize=0.25;   % gridsize*Ng = lane length
     lane_width=3.5;   %width of a single lane
     vehicle_width=1.8;  %use vehicle width to increase the positioning accuracy, it is assumed that the GPS receiver locates at the center of the vehicle
-    velocity=0.1;  %vehicle velocity
+%     velocity=100*randn;  %vehicle velocity
     Ns=100;  % #of simulation time points
     Nsv=6;  %#of visible satellites
     Np=50; % #of particles
     %     block_prob=0;
+    % randomly block a small amount of neighboring vehicles;
     block_prob=0.2;
-    
+
+    %define a dynamic network system with changing distance wrt time and
+    %velocity
+    velocity = 30*randn(2,50);
+    distance = zeros(50,50);
+    distance_dyn = zeros(50,50,Ns);
+    for k = 1:Ns
+        for i = 1:50
+            for j = 1:50
+                distance(i,j) = sqrt((vehicle(i,1)-vehicle(j,1))^2 ...
+                    + (vehicle(i,2) - vehicle(j,2))^2);
+%                 distance_dyn(i,j,k) = distance(i,j) + ...
+%                     (velocity(i)-velocity(j))*Ns;
+                distance_dyn(i,j,k) = sqrt((vehicle(i,1)-vehicle(j,1)+(velocity(1,i)-velocity(1,j))*Ns)^2 ...
+                    + (vehicle(i,2) - vehicle(j,2)+(velocity(2,i)-velocity(2,j))*Ns)^2);
+            end
+        end
+    end
+    %%
     %redundent
     mpmat=cell(N,1);   %multipath error time history for N vehicles
     for i=1:N
@@ -49,43 +71,48 @@ for tt=1:3
     loadgps
     startt=500; t = startt; deltat=0.1;
     
-    % usrenu{1}(1:Ns,1)=(6:velocity*deltat:6+velocity*deltat*(Ns-1))';
-    % usrenu{1}(1:Ns,1)=0.5*((1:Ns)*deltat).^2;
+    %define usr in a complicated way
+    %     usrenu{1}(1:Ns,1)=(6:velocity*deltat:6+velocity*deltat*(Ns-1))';
+    %     usrenu{1}(1:Ns,1)=0.5*((1:Ns)*deltat).^2;
     %
-    % usrenu{1}(1:Ns,2)=50-lane_width/2;
-    % usrenu{1}(1:Ns,3)=0;
-    % for k=1:1
-    % usrenu{k}(1:Ns,1)=(16:velocity*deltat:16+velocity*deltat*(Ns-1))';
-    % usrenu{k}(1:Ns,2)=250-lane_width/2;
-    % usrenu{k}(1:Ns,3)=0;
-    % end
-    % for k=2:2
-    % usrenu{k}(1:Ns,1)=(473:-velocity*deltat:473-velocity*deltat*(Ns-1))';
-    % usrenu{k}(1:Ns,2)=250+lane_width/2;
-    % usrenu{k}(1:Ns,3)=0;
-    % end
-    % for k=3:3
-    % usrenu{k}(1:Ns,2)=(16:velocity*deltat:16+velocity*deltat*(Ns-1))';
-    % usrenu{k}(1:Ns,1)=250+lane_width/2;
-    % usrenu{k}(1:Ns,3)=0;
-    % end
-    % for k=4:4
-    % usrenu{k}(1:Ns,2)=(473:-velocity*deltat:473-velocity*deltat*(Ns-1))';
-    % usrenu{k}(1:Ns,1)=250-lane_width/2;
-    % usrenu{k}(1:Ns,3)=0;             %generate the vehicles' path in the local coordinate system
-    % end
-    %
-    % for k=5:N
-    %     index=mod(k,4);
-    %     if index==0
-    %         index=4;
+    %     usrenu{1}(1:Ns,2)=50-lane_width/2;
+    %     usrenu{1}(1:Ns,3)=0;
+    %     for k=1:1
+    %     usrenu{k}(1:Ns,1)=(16:velocity*deltat:16+velocity*deltat*(Ns-1))';
+    %     usrenu{k}(1:Ns,2)=250-lane_width/2;
+    %     usrenu{k}(1:Ns,3)=0;
     %     end
-    %     usrenu{k}=usrenu{index};
-    % end
+    %     for k=2:2
+    %     usrenu{k}(1:Ns,1)=(473:-velocity*deltat:473-velocity*deltat*(Ns-1))';
+    %     usrenu{k}(1:Ns,2)=250+lane_width/2;
+    %     usrenu{k}(1:Ns,3)=0;
+    %     end
+    %     for k=3:3
+    %     usrenu{k}(1:Ns,2)=(16:velocity*deltat:16+velocity*deltat*(Ns-1))';
+    %     usrenu{k}(1:Ns,1)=250+lane_width/2;
+    %     usrenu{k}(1:Ns,3)=0;
+    %     end
+    %     for k=4:4
+    %     usrenu{k}(1:Ns,2)=(473:-velocity*deltat:473-velocity*deltat*(Ns-1))';
+    %     usrenu{k}(1:Ns,1)=250-lane_width/2;
+    %     usrenu{k}(1:Ns,3)=0;             %generate the vehicles' path in the local coordinate system
+    %     end
+    %
+    %     for k=5:N
+    %         index=mod(k,4);
+    %         if index==0
+    %             index=4;
+    %         end
+    %         usrenu{k}=usrenu{index};
+    %     end
+    %end usr difinition/complex (not workable)
     
+    %define usr in a simple&workable way
     for k=1:N
         usrenu{k}(1:Ns,1:3)=0;
     end
+    %end usr definition/simple
+    
     %EndLoop = max(size(usrenu));
     %bar1 = waitbar(0,'Generating User Solutions...  ');
     %id=[]; %added by macshen
@@ -185,13 +212,13 @@ for tt=1:3
         %         sigma_map2=0.01;  %variance of map inprecision, this might be larger for real map
         
         if i==1   %for the first time step, initialize particles for ego-state estimation and multipath mitigation
-            initialize_pf_CMM(Np,Nsv,N,common_error(i,:).',velocity);
+            initialize_pf_CMM(Np,Nsv,N,common_error(i,:).',distance_dyn(1,k,Ns));
             for k=1:N
                 if rand>block_prob
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM;  %think about it, resample for every vehicle update or for the whole update?
-                    weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
-                    resample_CMM;
+                    resample_CMM(distance_dyn(1,k,Ns));  %think about it, resample for every vehicle update or for the whole update?
+                    weight_CMM(k,map_angle(k),distance_dyn(1,k,Ns));  %calculate weight according to the map constraints
+                    resample_CMM(distance_dyn(1,k,Ns));
                 end
             end
         else  %second step and so on
@@ -199,9 +226,10 @@ for tt=1:3
             for k=1:N
                 if rand>block_prob
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM;
-                    weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
-                    resample_CMM;
+                    resample_CMM(distance_dyn(1,k,Ns));
+                    %   weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
+                    weight_CMM(k,map_angle(k),distance_dyn(1,k,Ns));  %calculate weight according to the map constraints
+                    resample_CMM(distance_dyn(1,k,Ns));
                 end
             end
         end
@@ -218,6 +246,7 @@ for tt=1:3
         plotcov2d(mu(1),mu(2),cov,'g',0,0,0,3);
         xlim([-3,3]);
         ylim([-4,4]);
+       % axis equal
         err_CMM(i)=norm(mu'-usrenu{1}(i,1:2));
         deter(i)=det(cov);
         %when not Kalman
