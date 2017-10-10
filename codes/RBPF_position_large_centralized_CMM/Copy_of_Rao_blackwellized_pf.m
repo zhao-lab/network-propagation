@@ -13,7 +13,7 @@ load vehicle_50.mat;
 file_path = './support_files';
 addpath(file_path)
 
-for tt=1:3
+for tt=1:1
     %created by macshen
     tt
     clearvars -except record_err tt vehicle
@@ -37,23 +37,14 @@ for tt=1:3
     Np=50; % #of particles
     %     block_prob=0;
     % randomly block a small amount of neighboring vehicles;
-    block_prob=0.2;
+    block_prob=0;
 
     %define a dynamic network system with changing distance wrt time and
     %velocity
     velocity = 30*randn(1,50);
     distance = zeros(50,50);
     distance_dyn = zeros(50,50,Ns);
-    for k = 1:Ns
-        for i = 1:50
-            for j = 1:50
-                distance(i,j) = sqrt((vehicle(i,1)-vehicle(j,1))^2 ...
-                    + (vehicle(i,2) - vehicle(j,2))^2);
-                distance_dyn(i,j,k) = distance(i,j) + ...
-                    (velocity(i)-velocity(j))*Ns;
-            end
-        end
-    end
+
     %%
     %redundent
     mpmat=cell(N,1);   %multipath error time history for N vehicles

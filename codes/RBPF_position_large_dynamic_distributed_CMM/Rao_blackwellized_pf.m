@@ -382,7 +382,7 @@ for tt=1:1
             ave_err_CMM(i,1:2)=ave_err_CMM(i,1:2)+err_CMM{k}(i,:)/N;
             bias_x{k}(i)=err_CMM{k}(i,1);
             bias_y{k}(i)=err_CMM{k}(i,2);
-            err_norm{k}(i)=norm(err_CMM{k}(i,:));
+            err_norm{k}(i)=norm(err_CMM{k}(i,1:2));
             deter{k}(i)=det(cov{k});
         end
         for k=1:N
@@ -409,8 +409,11 @@ for tt=1:1
     % for k=1:1000
     % d(k)=Distance_to_road([x(k),y(k)],grid_size);    %pay attention to changing the grid-size if
     % end
-    record_err(tt)=mean(err_norm{1});
-    record_cov(tt)=mean(deter{1});
+    %
+    for i = 1:N
+        record_err(tt,i)=mean(err_norm{i});
+        record_cov(tt,i)=mean(deter{i});
+    end
 end
 
 %% PLOT ALL ERRORS AND CORVARIANCE
@@ -444,3 +447,15 @@ hold on;
 plot(com_err(2,:),'-o','linewidth',2);
 legend('com-err_x','com-err_y')
 title('Com-Err for cars in network')
+%%
+for i = 1:N
+    for j = 1:Ns
+         err_CMM_norm{i}(j) = norm(err_CMM{i}(j,1),err_CMM{i}(j,2));
+    end
+end
+% figure;
+ for i = 1:10:N
+    figure;
+    plot(err_CMM_norm{i},'linewidth',2);
+%     hold on;
+ end

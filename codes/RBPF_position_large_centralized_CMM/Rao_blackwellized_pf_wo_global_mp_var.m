@@ -187,9 +187,9 @@ for tt=1:3
             for k=1:N
                 if rand>block_prob
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM;  %think about it, resample for every vehicle update or for the whole update?
-                    weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
-                    resample_CMM;
+                    resample_CMM(0);  %think about it, resample for every vehicle update or for the whole update?
+                    weight_CMM(k,map_angle(k),0);  %calculate weight according to the map constraints
+                    resample_CMM(0);
                 end
             end
         else  %second step and so on
@@ -197,9 +197,9 @@ for tt=1:3
             for k=1:N
                 if rand>block_prob
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM;
-                    weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
-                    resample_CMM;
+                    resample_CMM(0);
+                    weight_CMM(k,map_angle(k),0);  %calculate weight according to the map constraints
+                    resample_CMM(0);
                 end
             end
         end

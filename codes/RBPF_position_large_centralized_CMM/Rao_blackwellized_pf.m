@@ -7,14 +7,14 @@
 %all the information available. The map matching is treated as measurement
 %to determine the weight of each particle.
 clear all
-load vehicle_50.mat;
+load most_sparse.mat;
 % vehicle=new_vehicle;
 
 file_path = './support_files';
 addpath(file_path)
 
 % if medium or most sparse, add the followinng
-% vehicle = new_vehicle;
+vehicle = new_vehicle;
 
 for tt=1:1
     %created by macshen
@@ -44,12 +44,17 @@ for tt=1:1
 
     %define a dynamic network system with changing distance wrt time and
     %velocity
-    velocity = 30*randn(2,50);
-    distance = zeros(50,50);
-    distance_dyn = zeros(50,50,Ns);
+    velocity_norm = 30*randn(1,N);
+    velocity = zeros(2,N);
+    for i = 1:N
+         velocity(1,i) = velocity_norm(i)*cos(vehicle(i,3));
+         velocity(2,i) = velocity_norm(i)*sin(vehicle(i,3));
+    end
+    distance = zeros(N,N);
+    distance_dyn = zeros(N,N,Ns);
     for k = 1:Ns
-        for i = 1:50
-            for j = 1:50
+        for i = 1:N
+            for j = 1:N
                 distance(i,j) = sqrt((vehicle(i,1)-vehicle(j,1))^2 ...
                     + (vehicle(i,2) - vehicle(j,2))^2);
 %                 distance_dyn(i,j,k) = distance(i,j) + ...
@@ -265,7 +270,7 @@ for tt=1:1
     % for k=1:1000
     % d(k)=Distance_to_road([x(k),y(k)],grid_size);    %pay attention to changing the grid-size if
     % end
-    record_err(tt)=mean(err_CMM);
+    record_err(tt)=mean(err_CMM)
 end
 
 % %% Different types of error evaluation
