@@ -51,7 +51,7 @@ for tt=1:1
          velocity(2,i) = velocity_norm(i)*sin(vehicle(i,3));
     end
     distance = zeros(N,N);
-    distance_dyn = zeros(N,N,Ns);
+%     distance_dyn = zeros(N,N,Ns);
     for k = 1:Ns
         for i = 1:N
             for j = 1:N
@@ -59,8 +59,11 @@ for tt=1:1
                     + (vehicle(i,2) - vehicle(j,2))^2);
 %                 distance_dyn(i,j,k) = distance(i,j) + ...
 %                     (velocity(i)-velocity(j))*Ns;
-                distance_dyn(i,j,k) = sqrt((vehicle(i,1)-vehicle(j,1)+(velocity(1,i)-velocity(1,j))*Ns)^2 ...
-                    + (vehicle(i,2) - vehicle(j,2)+(velocity(2,i)-velocity(2,j))*Ns)^2);
+                  distance_dyn{k}(i,j) = sqrt((vehicle(i,1)-vehicle(j,1)+(velocity(1,i)-velocity(1,j))*1*k)^2 ...
+                    + (vehicle(i,2) - vehicle(j,2)+(velocity(2,i)-velocity(2,j))*1*k)^2);
+                position{k} = vehicle(:,1:2);
+                position_dyn{k}(i,1) = position{k}(i,1) + velocity(1,i)*k;
+                position_dyn{k}(i,2) = position{k}(i,2) + velocity(2,i)*k;
             end
         end
     end
@@ -217,13 +220,13 @@ for tt=1:1
         %         sigma_map2=0.01;  %variance of map inprecision, this might be larger for real map
         
         if i==1   %for the first time step, initialize particles for ego-state estimation and multipath mitigation
-            initialize_pf_CMM(Np,Nsv,N,common_error(i,:).',distance_dyn(1,k,Ns));
+            initialize_pf_CMM(Np,Nsv,N,common_error(i,:).',distance_dyn{i}(1,k));
             for k=1:N
                 if rand>block_prob
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM(distance_dyn(1,k,Ns));  %think about it, resample for every vehicle update or for the whole update?
-                    weight_CMM(k,map_angle(k),distance_dyn(1,k,Ns));  %calculate weight according to the map constraints
-                    resample_CMM(distance_dyn(1,k,Ns));
+                    resample_CMM(distance_dyn{i}(1,k));  %think about it, resample for every vehicle update or for the whole update?
+                    weight_CMM(k,map_angle(k),distance_dyn{i}(1,k));  %calculate weight according to the map constraints
+                    resample_CMM(distance_dyn{i}(1,k));
                 end
             end
         else  %second step and so on
@@ -231,10 +234,10 @@ for tt=1:1
             for k=1:N
                 if rand>block_prob
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM(distance_dyn(1,k,Ns));
+                    resample_CMM(distance_dyn{i}(1,k));
                     %   weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
-                    weight_CMM(k,map_angle(k),distance_dyn(1,k,Ns));  %calculate weight according to the map constraints
-                    resample_CMM(distance_dyn(1,k,Ns));
+                    weight_CMM(k,map_angle(k),distance_dyn{i}(1,k));  %calculate weight according to the map constraints
+                    resample_CMM(distance_dyn{i}(1,k));
                 end
             end
         end
@@ -295,20 +298,58 @@ end
 %         rt_ave_sq_err(i)=sqrt(ave_sq_err(i));
 % end
 %% PLOT ALL ERRORS AND CORVARIANCE
-figure;
-% hold on;
-plot(common_error_position','linewidth',2)
-legend('common-error-position_x','common-error-position_y')
-% legend('common-error-position_x least sparse','common-error-position_y least sparse', ...
-%     'common-error-position_x medium sparse', 'common-error-position_y medium sparse', ...
-%     'common-error-position_x most sparse', 'common-error-position_y most sparse')
-title('Common Error for Longitude and Lateral Position')
-%%
+% figure;
+% % hold on;
+% plot(common_error_position','linewidth',2)
+% legend('common-error-position_x','common-error-position_y')
+% % legend('common-error-position_x least sparse','common-error-position_y least sparse', ...
+% %     'common-error-position_x medium sparse', 'common-error-position_y medium sparse', ...
+% %     'common-error-position_x most sparse', 'common-error-position_y most sparse')
+% title('Common Error for Longitude and Lateral Position')
 figure;
 plot(err_CMM','linewidth',2)
-% legend('err-CMM')
+legend('err-CMM')
 % hold on;
-legend('err-CMM w/o mp')
-% legend('err-CMM least sparse', 'err-CMM medium sparse', 'err-CMM most sparse')
-title(strcat(num2str(N), ' vehicle network, Error for CMM,'))
-
+% % legend('err-CMM w/o mp')
+%  legend('err-CMM original', 'add dynamic and adjust update.weight w/ distance', 'add dynamic and adjust resample weight w/ distance')
+title(strcat(num2str(N), ' vehicle network, Error for CMM'))
+%%
+% close all
+% i for each timestep, record position:
+% for i = 1:100
+%     figure;
+%     for m = 1:N
+%     % figure;
+%     plot(position_dyn{i}(m,1),position_dyn{i}(m,2),'o');
+%     xlabel('X/ m')
+%     ylabel('Y/ m')
+%     hold on;
+%      % saveas(gcf,strcat('imge_', i))
+%     end
+% end
+%
+%%
+%  % load the images
+%  images    = cell(3,1);
+%  images{1} = imread('img_16.png');
+%  images{2} = imread('img_17.png');
+%  images{3} = imread('img_18.png');
+%  images{4} = imread('img_19.png');
+%  images{5} = imread('img_20.png');
+%   % create the video writer with 1 fps
+%  writerObj = VideoWriter('myVideo.avi');
+%  writerObj.FrameRate = 1;
+%  % set the seconds per image
+%  secsPerImage = [5 10 15];
+%  % open the video writer
+%  open(writerObj);
+%  % write the frames to the video
+%  for u=1:length(images)
+%      % convert the image to a frame
+%      frame = im2frame(images{u});
+%      for v=1:secsPerImage(u) 
+%          writeVideo(writerObj, frame);
+%      end
+%  end
+%  % close the writer object
+%  close(writerObj);
