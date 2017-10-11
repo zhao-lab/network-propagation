@@ -238,6 +238,7 @@ for tt=1:1
                     %   weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
                     weight_CMM(k,map_angle(k),distance_dyn{i}(1,k));  %calculate weight according to the map constraints
                     resample_CMM(distance_dyn{i}(1,k));
+                    pf_weight(i,k) = pf.weight;
                 end
             end
         end
