@@ -59,7 +59,7 @@ for tt=1:1
                     + (vehicle(i,2) - vehicle(j,2))^2);
 %                 distance_dyn(i,j,k) = distance(i,j) + ...
 %                     (velocity(i)-velocity(j))*Ns;
-                  distance_dyn{k}(i,j) = sqrt((vehicle(i,1)-vehicle(j,1)+(velocity(1,i)-velocity(1,j))*1*k)^2 ...
+                distance_dyn{k}(i,j) = sqrt((vehicle(i,1)-vehicle(j,1)+(velocity(1,i)-velocity(1,j))*1*k)^2 ...
                     + (vehicle(i,2) - vehicle(j,2)+(velocity(2,i)-velocity(2,j))*1*k)^2);
                 position{k} = vehicle(:,1:2);
                 position_dyn{k}(i,1) = position{k}(i,1) + velocity(1,i)*k;
@@ -275,6 +275,8 @@ for tt=1:1
     % d(k)=Distance_to_road([x(k),y(k)],grid_size);    %pay attention to changing the grid-size if
     % end
     record_err(tt)=mean(err_CMM)
+    record_err_CMM = cell(tt,1);
+    record_err_CMM{tt} = err_CMM;
 end
 
 % %% Different types of error evaluation
@@ -307,6 +309,8 @@ end
 % %     'common-error-position_x medium sparse', 'common-error-position_y medium sparse', ...
 % %     'common-error-position_x most sparse', 'common-error-position_y most sparse')
 % title('Common Error for Longitude and Lateral Position')
+
+%%
 figure;
 plot(err_CMM','linewidth',2)
 legend('err-CMM')
@@ -314,6 +318,8 @@ legend('err-CMM')
 % % legend('err-CMM w/o mp')
 %  legend('err-CMM original', 'add dynamic and adjust update.weight w/ distance', 'add dynamic and adjust resample weight w/ distance')
 title(strcat(num2str(N), ' vehicle network, Error for CMM'))
+
+record_err
 %%
 % close all
 % i for each timestep, record position:

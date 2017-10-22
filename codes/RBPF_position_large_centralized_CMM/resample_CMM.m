@@ -26,7 +26,9 @@ for j=1:size_samples
 end
 for k=1:size_samples
     pf(k).weight=1/size_samples;
-    if distance_dyn > 2000
+    if distance_dyn <=20
+        pf(k).weight = 0.1*pf(k).weight;
+    elseif distance_dyn > 2000
         pf(k).weight=0.2*pf(k).weight;
     end
 end

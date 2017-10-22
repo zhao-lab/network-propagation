@@ -7,8 +7,9 @@
 %all the information available. The map matching is treated as measurement
 %to determine the weight of each particle.
 clear all
-load vehicle_50.mat;
-% vehicle=new_vehicle;
+% load vehicle_50.mat;
+load most_sparse;
+vehicle=new_vehicle;
 
 file_path = './support_files';
 addpath(file_path)
@@ -31,20 +32,29 @@ for tt=1:1
     mp_gridsize=0.25;   % gridsize*Ng = lane length
     lane_width=3.5;   %width of a single lane
     vehicle_width=1.8;  %use vehicle width to increase the positioning accuracy, it is assumed that the GPS receiver locates at the center of the vehicle
-%     velocity=100*randn;  %vehicle velocity
+    %     velocity=100*randn;  %vehicle velocity
     Ns=100;  % #of simulation time points
     Nsv=6;  %#of visible satellites
     Np=50; % #of particles
     %     block_prob=0;
     % randomly block a small amount of neighboring vehicles;
     block_prob=0;
-
+    
     %define a dynamic network system with changing distance wrt time and
     %velocity
     velocity = 30*randn(1,50);
     distance = zeros(50,50);
     distance_dyn = zeros(50,50,Ns);
-
+    
+    
+    for i = 1:N
+        for j = 1:N
+            distance(i,j) = sqrt((vehicle(i,1)-vehicle(j,1))^2 ...
+                + (vehicle(i,2) - vehicle(j,2))^2);
+        end
+    end
+    
+    
     %%
     %redundent
     mpmat=cell(N,1);   %multipath error time history for N vehicles
@@ -204,7 +214,8 @@ for tt=1:1
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
                     resample_CMM(0);  %think about it, resample for every vehicle update or for the whole update?
                     weight_CMM(k,map_angle(k),distance(1,k));  %calculate weight according to the map constraints
-                    resample_CMM(0);
+                    %                     resample_CMM(0);
+                    resample_CMM(distance(1,k));
                 end
             end
         else  %second step and so on
@@ -212,10 +223,10 @@ for tt=1:1
             for k=1:N
                 if rand>block_prob
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM(0);
+                    resample_CMM(distance(1,k));
                     %                     weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
                     weight_CMM(k,map_angle(k),distance(1,k));  %calculate weight according to the map constraints
-                    resample_CMM(0);
+                    resample_CMM(distance(1,k));
                 end
             end
         end
@@ -251,7 +262,7 @@ for tt=1:1
     % for k=1:1000
     % d(k)=Distance_to_road([x(k),y(k)],grid_size);    %pay attention to changing the grid-size if
     % end
-    record_err(tt)=mean(err_CMM);
+    record_err(tt)=mean(err_CMM)
 end
 
 % %% Different types of error evaluation
@@ -276,15 +287,15 @@ end
 %         rt_ave_sq_err(i)=sqrt(ave_sq_err(i));
 % end
 %% PLOT ALL ERRORS AND CORVARIANCE
-figure;
-% hold on;
-plot(common_error_position','linewidth',2)
-legend('common-error-position_x','common-error-position_y')
-% legend('common-error-position_x least sparse','common-error-position_y least sparse', ...
-%     'common-error-position_x medium sparse', 'common-error-position_y medium sparse', ...
-%     'common-error-position_x most sparse', 'common-error-position_y most sparse')
-title('Common Error for Longitude and Lateral Position')
-%%
+% figure;
+% % hold on;
+% plot(common_error_position','linewidth',2)
+% legend('common-error-position_x','common-error-position_y')
+% % legend('common-error-position_x least sparse','common-error-position_y least sparse', ...
+% %     'common-error-position_x medium sparse', 'common-error-position_y medium sparse', ...
+% %     'common-error-position_x most sparse', 'common-error-position_y most sparse')
+% title('Common Error for Longitude and Lateral Position')
+%
 figure;
 plot(err_CMM','linewidth',2)
 % legend('err-CMM')
