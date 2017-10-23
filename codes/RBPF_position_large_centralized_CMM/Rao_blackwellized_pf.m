@@ -321,20 +321,20 @@ title(strcat(num2str(N), ' vehicle network, Error for CMM'))
 
 record_err
 %%
-% close all
-% i for each timestep, record position:
-% for i = 1:100
-%     figure;
-%     for m = 1:N
-%     % figure;
-%     plot(position_dyn{i}(m,1),position_dyn{i}(m,2),'o');
-%     xlabel('X/ m')
-%     ylabel('Y/ m')
-%     hold on;
-%      % saveas(gcf,strcat('imge_', i))
-%     end
-% end
-%
+close all
+% for each timestep, record position:
+for i = 1:100
+    figure;
+    for m = 1:N
+    % figure;
+    plot(position_dyn{i}(m,1),position_dyn{i}(m,2),'o');
+    xlabel('X/ m')
+    ylabel('Y/ m')
+    hold on;
+     % saveas(gcf,strcat('imge_', i))
+    end
+end
+
 %%
 %  % load the images
 %  images    = cell(3,1);
@@ -360,3 +360,16 @@ record_err
 %  end
 %  % close the writer object
 %  close(writerObj);
+
+%% 
+for j = 1:Ns
+    ni = 1;
+    for i = 1:N
+        if distance_dyn{1,j}(i,1) < 12000
+            dis_in_ind{j,1}(ni,1) = i;
+            dis_in{j,1}(ni,1) = distance_dyn{1,56}(i,1);
+            ni = ni + 1;
+        end
+    end
+end
+dis_in_ind
