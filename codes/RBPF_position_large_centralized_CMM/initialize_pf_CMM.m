@@ -1,5 +1,6 @@
 function initialize_pf_CMM(Np,Nsv,N,common_error,distance_dyn)
 global pf;
+% for j = 1:3
 for k=1:Np
     pf(k).common=common_error+0.1*randn(Nsv,1);  %common error stored as row vector
 %     if distance_dyn > 2000

@@ -7,14 +7,14 @@
 %all the information available. The map matching is treated as measurement
 %to determine the weight of each particle.
 clear all
-% load vehicle_50.mat;
-load most_sparse;
-vehicle=new_vehicle;
+load vehicle_50.mat;
+%load most_sparse;
+%vehicle=new_vehicle;
 
 file_path = './support_files';
 addpath(file_path)
 
-for tt=1:1
+for tt=1:20
     %created by macshen
     tt
     clearvars -except record_err tt vehicle
@@ -43,9 +43,7 @@ for tt=1:1
     %define a dynamic network system with changing distance wrt time and
     %velocity
     velocity = 30*randn(1,50);
-    distance = zeros(50,50);
-    distance_dyn = zeros(50,50,Ns);
-    
+    distance = zeros(50,50);    
     
     for i = 1:N
         for j = 1:N
@@ -121,7 +119,16 @@ for tt=1:1
     sigma_a2=1;  %unmodeled position noise caused by acceleration,assuming the variance of acceleration is 1.
     sigma_b2=1;
     sigma_d2=1;   %specify the uncertainty level of the clock bias
-    noise_scaling_factor=[1 1 0 0 1];
+    
+    % change noise_scaling_factor to test the influence of different types
+    % of noise;
+    % entried in the vector each represents:
+    % (1)thermal noise; (2)tropospheric delay; (3)Selective Availability;
+    % (4)multipath error; (5)ionospheric delay to the pseudoranges
+    
+    % noise_scaling_factor=[1 1 0 0 1];
+    
+    noise_scaling_factor = [1 0 0 0 1];
     for k=1:N
         white_noise{k}=noise_scaling_factor(1)^2*randn(Ns,Nsv);
     end
@@ -133,35 +140,35 @@ for tt=1:1
     %         sigma_m2=1;   %mp variance
     %         sigma_md2=1;   %mp drift variance
     
-    %     % Comment this part if multipath error is neglected
-    %     load('mp_x.mat');
-    %     load('mp_y.mat');
-    %     load('mp_30.mat');
-    %     global mp_xg;
-    %     global mp_yg;
-    %     global LOS_xg;
-    %     global LOS_yg;   %global variable shared with add_mp_wn
-    %
-    %
-    %     for k=1:Nsv
-    %     mp_x{k}=mp_x{k}+0.1*abs(randn(size(mp_x{k})));
-    %     mp_y{k}=mp_y{k}+0.1*abs(randn(size(mp_y{k})));   %perturb to simulate diffraction
-    %     wavelength=3*10^8/1575.42/10^6;   % L1 signal wavelength
-    %     phase_x=2*pi*mp_x{k}/wavelength;
-    %     phase_y=2*pi*mp_y{k}/wavelength;
-    %     mp_x{k}=0.5*mp_x{k}.*cos(phase_x);
-    %     mp_y{k}=0.5*mp_y{k}.*cos(phase_y);
-    %     end
-    %     mp_xg=mp_x;
-    %     mp_yg=mp_y;
-    %     LOS_xg=LOS_x;
-    %     LOS_yg=LOS_y;
-    %     for k=1:6
-    %         mp_xg{k}=zeros(1920,40);
-    %         mp_yg{k}=zeros(1920,40);
-    %         LOS_xg{k}=ones(1920,40);
-    %         LOS_yg{k}=ones(1920,40);
-    %     end
+        % Comment this part if multipath error is neglected
+        load('mp_x.mat');
+        load('mp_y.mat');
+        load('mp_30.mat');
+        global mp_xg;
+        global mp_yg;
+        global LOS_xg;
+        global LOS_yg;   %global variable shared with add_mp_wn
+    
+    
+        for k=1:Nsv
+        mp_x{k}=mp_x{k}+0.1*abs(randn(size(mp_x{k})));
+        mp_y{k}=mp_y{k}+0.1*abs(randn(size(mp_y{k})));   %perturb to simulate diffraction
+        wavelength=3*10^8/1575.42/10^6;   % L1 signal wavelength
+        phase_x=2*pi*mp_x{k}/wavelength;
+        phase_y=2*pi*mp_y{k}/wavelength;
+        mp_x{k}=0.5*mp_x{k}.*cos(phase_x);
+        mp_y{k}=0.5*mp_y{k}.*cos(phase_y);
+        end
+        mp_xg=mp_x;
+        mp_yg=mp_y;
+        LOS_xg=LOS_x;
+        LOS_yg=LOS_y;
+        for k=1:6
+            mp_xg{k}=zeros(1920,40);
+            mp_yg{k}=zeros(1920,40);
+            LOS_xg{k}=ones(1920,40);
+            LOS_yg{k}=ones(1920,40);
+        end
     
     
     for i = 1:Ns  %draw the first step
@@ -212,21 +219,22 @@ for tt=1:1
             for k=1:N
                 if rand>block_prob
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM(0);  %think about it, resample for every vehicle update or for the whole update?
+                    % resample_CMM(distance(1,k),100000,0,0); 
+                    resample_CMM_old;  %think about it, resample for every vehicle update or for the whole update?
                     weight_CMM(k,map_angle(k),distance(1,k));  %calculate weight according to the map constraints
                     %                     resample_CMM(0);
-                    resample_CMM(distance(1,k));
+                    resample_CMM_old;
                 end
             end
         else  %second step and so on
             predict_pf_CMM(sigma_a2,sigma_b2,sigma_d2,deltat,N,Np,Nsv,hor_DLP{k});
             for k=1:N
-                if rand>block_prob
+                if rand>block_prob % && distance(1,k)<2000
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM(distance(1,k));
+                    resample_CMM_old;
                     %                     weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
                     weight_CMM(k,map_angle(k),distance(1,k));  %calculate weight according to the map constraints
-                    resample_CMM(distance(1,k));
+                    resample_CMM_old;
                 end
             end
         end
@@ -243,7 +251,9 @@ for tt=1:1
         plotcov2d(mu(1),mu(2),cov,'g',0,0,0,3);
         %         xlim([-3,3]);
         %         ylim([-4,4]);
-        axis equal
+        % axis equal
+        xlim([-4,4]);
+        ylim([-4,4]);
         err_CMM(i)=norm(mu'-usrenu{1}(i,1:2));
         deter(i)=det(cov);
         %when not Kalman

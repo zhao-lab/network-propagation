@@ -7,19 +7,21 @@
 %all the information available. The map matching is treated as measurement
 %to determine the weight of each particle.
 clear all
-load most_sparse.mat;
+close all;
+load vehicle_50.mat;
+% load most_sparse.mat
 % vehicle=new_vehicle;
 
 file_path = './support_files';
 addpath(file_path)
 
 % if medium or most sparse, add the followinng
-vehicle = new_vehicle;
+% vehicle = new_vehicle;
 
 for tt=1:1
     %created by macshen
     tt
-    clearvars -except record_err tt vehicle
+    clearvars -except record_err tt vehicle record_err_CMM
     close all
     global pf;
     map_angle = vehicle(:,3);    %randomly generate map_angle
@@ -34,31 +36,37 @@ for tt=1:1
     mp_gridsize=0.25;   % gridsize*Ng = lane length
     lane_width=3.5;   %width of a single lane
     vehicle_width=1.8;  %use vehicle width to increase the positioning accuracy, it is assumed that the GPS receiver locates at the center of the vehicle
-%     velocity=100*randn;  %vehicle velocity
-    Ns=100;  % #of simulation time points
+    %     velocity=100*randn;  %vehicle velocity
+    Ns=30;  % #of simulation time points
     Nsv=6;  %#of visible satellites
-    Np=50; % #of particles
+    Np=75; % #of particles
     %     block_prob=0;
     % randomly block a small amount of neighboring vehicles;
-    block_prob=0.2;
-
+    block_prob=0;
+    
     %define a dynamic network system with changing distance wrt time and
     %velocity
-    velocity_norm = 30*randn(1,N);
+    velocity_norm = 10*randn(1,N);
+    
+    velocity_norm(1) = 0;
+    velocity_norm(2) = 5;
+    velocity_norm(3) = 20;
+    
     velocity = zeros(2,N);
     for i = 1:N
-         velocity(1,i) = velocity_norm(i)*cos(vehicle(i,3));
-         velocity(2,i) = velocity_norm(i)*sin(vehicle(i,3));
+        velocity(1,i) = velocity_norm(i)*cos(vehicle(i,3)); %0;
+        velocity(2,i) = velocity_norm(i)*sin(vehicle(i,3)); %0;
     end
+    
     distance = zeros(N,N);
-%     distance_dyn = zeros(N,N,Ns);
+    %     distance_dyn = zeros(N,N,Ns);
     for k = 1:Ns
         for i = 1:N
             for j = 1:N
                 distance(i,j) = sqrt((vehicle(i,1)-vehicle(j,1))^2 ...
                     + (vehicle(i,2) - vehicle(j,2))^2);
-%                 distance_dyn(i,j,k) = distance(i,j) + ...
-%                     (velocity(i)-velocity(j))*Ns;
+                %                 distance_dyn(i,j,k) = distance(i,j) + ...
+                %                     (velocity(i)-velocity(j))*Ns;
                 distance_dyn{k}(i,j) = sqrt((vehicle(i,1)-vehicle(j,1)+(velocity(1,i)-velocity(1,j))*1*k)^2 ...
                     + (vehicle(i,2) - vehicle(j,2)+(velocity(2,i)-velocity(2,j))*1*k)^2);
                 position{k} = vehicle(:,1:2);
@@ -115,10 +123,32 @@ for tt=1:1
     %     end
     %end usr difinition/complex (not workable)
     
-    %define usr in a simple&workable way
+    %% define usr in a simple&workable way
     for k=1:N
         usrenu{k}(1:Ns,1:3)=0;
     end
+    
+    
+    %     t = linspace(0,2*pi);
+    %
+    %     plot(cos(t),sin(t))
+    
+    usrenu{1}(1:Ns,1:3)=0;
+    for i = 1:Ns
+        usrenu{1}(i,1)=10*(1-cos(2*pi*i/Ns));
+        usrenu{1}(i,2)=10*sin(2*pi*i/Ns);
+    end
+    
+    %     for k=2:N
+    %         usrenu{k}(1:Ns,1:3)=0;
+    %     end
+    
+    %      for j=1:Ns
+    %          for k = 1:N
+    %          usrenu{k}(j,1:2)=position_dyn{j}(k,:);
+    %          usrenu{k}(j,3)=vehicle(k,3);
+    %          end
+    %      end
     %end usr definition/simple
     
     %EndLoop = max(size(usrenu));
@@ -176,6 +206,27 @@ for tt=1:1
     %     end
     
     
+    %% attempt to add "range of confidence"
+    
+    confi_rang = 3000;
+    for j = 1:Ns
+        ni = 1;
+        for i = 1:N
+            if distance_dyn{1,j}(i,1) < confi_rang
+                dis_in_ind{j,1}(ni,1) = i;
+                dis_in{j,1}(ni,1) = distance_dyn{1,j}(i,1);
+                ni = ni + 1;
+            end
+        end
+    end
+    % drop the ";" if you want to see how many vehicles are within the distance
+    % range of higher "confidence"
+    dis_in_ind;
+    
+    %%
+    
+    num_block_drop = zeros(Ns,N);
+    block_thrend = rand(Ns,N);
     for i = 1:Ns  %draw the first step
         t = t + deltat;
         
@@ -191,7 +242,11 @@ for tt=1:1
             hor_DLP{k}=hor_DLP{k}(1:2,1:2);
             
             estenu{k}(i,:) = (xyz2enu(estusr{k}(1:3),orgxyz))';   %transform the ECEF coordinate to local one with origin orgxyz
-            common_error_position(:,i)=estenu{k}(i,1:2)'-usrenu{k}(1,1:2)';
+            
+            common_error_position_1(:,i)=estenu{k}(i,1:2)'-usrenu{k}(1,1:2)';
+            common_error_position_2(:,i)=estenu{k}(i,1:2)'-usrenu{k}(2,1:2)';
+            
+            
             %    err{k}(i,1:3) = estenu{k}(i,1:3) - usrenu{k}(i,:);
             %    terr{k}(i) = estusr{k}(4);  % true clk bias is zero
         end   %end for loop of vehicle #
@@ -219,43 +274,68 @@ for tt=1:1
         %         sigma_eta2=sigma_multipath2+sigma_thermal2;
         %         sigma_map2=0.01;  %variance of map inprecision, this might be larger for real map
         
+        
         if i==1   %for the first time step, initialize particles for ego-state estimation and multipath mitigation
             initialize_pf_CMM(Np,Nsv,N,common_error(i,:).',distance_dyn{i}(1,k));
             for k=1:N
-                if rand>block_prob
-                    update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM(distance_dyn{i}(1,k));  %think about it, resample for every vehicle update or for the whole update?
-                    weight_CMM(k,map_angle(k),distance_dyn{i}(1,k));  %calculate weight according to the map constraints
-                    resample_CMM(distance_dyn{i}(1,k));
-                end
+                update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
+                resample_CMM(distance_dyn{i}(1,k),confi_rang,size(dis_in{i},1),0);  %think about it, resample for every vehicle update or for the whole update?
+                weight_CMM(k,map_angle(k),distance_dyn{i}(1,k));  %calculate weight according to the map constraints
+                resample_CMM(distance_dyn{i}(1,k),confi_rang, size(dis_in{i},1),0);
             end
         else  %second step and so on
             predict_pf_CMM(sigma_a2,sigma_b2,sigma_d2,deltat,N,Np,Nsv,hor_DLP{k});
             for k=1:N
-                if rand>block_prob
+                if  block_thrend(i,k) < block_prob && distance_dyn{i}(1,k)>2000
+                    %num_block = num_block+1;
+                    num_block_drop(i,k) = num_block_drop(i,k) + 1;
+                end
+                if block_thrend(i,k) >= block_prob || distance_dyn{i}(1,k)<=2000
+                    sum_blcok_drop(i,1) = sum(num_block_drop(i,:));
                     update_pf_CMM(estenu{k}(i,1:2)',svxyzmat{k},sigma_thermal2,orgxyz,Np,k,hor_DLP{k},H{k});   %pf update given measurement
-                    resample_CMM(distance_dyn{i}(1,k));
+                    resample_CMM(distance_dyn{i}(1,k),confi_rang,size(dis_in{i},1),sum(num_block_drop(i,:)));
                     %   weight_CMM(k,map_angle(k));  %calculate weight according to the map constraints
                     weight_CMM(k,map_angle(k),distance_dyn{i}(1,k));  %calculate weight according to the map constraints
-                    resample_CMM(distance_dyn{i}(1,k));
+                    resample_CMM(distance_dyn{i}(1,k),confi_rang,size(dis_in{i},1),sum(num_block_drop(i,:)));
+                    % store realtime pf.weight related every timestep (i in [1,Ns])
+                    % and every vehicles (k in [1,N])
                     pf_weight(i,k) = pf.weight;
                 end
+                
             end
         end
         
         [mu,cov]=pf_to_gaussian_RBPF;
+        
+        mu_step{i} = mu;
+        cov_step{i} = cov;
+        %         for k=1:2
+        %             [mu{k},cov{k}]=pf_to_gaussian_RBPF_2(k);
+        %         end
+        
         %         pf=resample(pf);  %resample, %weight needn't be normalized. After resample, weight has been normalized
         
-        
+        %%%%%%%%%%%%%%
+        %     end
+        %     %%
+        %
+        %      for i = 1:Ns
+        %%%%%%%%%%%%%%
         %calculate the determinant of the variance of the true error, this is expected to be related with the estimation covariance
         plotcov2d(usrenu{1}(i,1),usrenu{1}(i,2),[1,0;0,1],'r',0,0,0,1);  %plot the true position of vehicle as a circle
+        %         %% only a test:
+        %         % Originally, pf(k).mu not necessarity changed
+        %         for k = 1:Np
+        %             pf(k).mu{1}([1,3]) = mu;
+        %         end
+        %         %%
         for k=1:Np
             plotcov2d(pf(k).mu{1}(1),pf(k).mu{1}(3),pf(k).cov{1}([1,3],[1,3]),'b',0,0,0,3);  %plot the estimated position of vehicle as a circle
         end
         plotcov2d(mu(1),mu(2),cov,'g',0,0,0,3);
-        xlim([-3,3]);
-        ylim([-4,4]);
-       % axis equal
+        %         xlim([-4,4]);
+        %         ylim([-4,4]);
+        axis equal
         err_CMM(i)=norm(mu'-usrenu{1}(i,1:2));
         deter(i)=det(cov);
         %when not Kalman
@@ -275,7 +355,6 @@ for tt=1:1
     % d(k)=Distance_to_road([x(k),y(k)],grid_size);    %pay attention to changing the grid-size if
     % end
     record_err(tt)=mean(err_CMM)
-    record_err_CMM = cell(tt,1);
     record_err_CMM{tt} = err_CMM;
 end
 
@@ -312,29 +391,55 @@ end
 
 %%
 figure;
-plot(err_CMM','linewidth',2)
+hold on;
+plot(err_CMM','.-','linewidth',2)
 legend('err-CMM')
-% hold on;
-% % legend('err-CMM w/o mp')
-%  legend('err-CMM original', 'add dynamic and adjust update.weight w/ distance', 'add dynamic and adjust resample weight w/ distance')
+hold on;
+% legend('err-CMM w/o mp')
+% legend('err-CMM original', 'error, Stationary model, equal resample weights','add dynamic and adjust update.weight w/ distance', 'add dynamic and adjust resample weight w/ distance')
+% legend( 'error, Dynamic model, equal resample weights','error, Dynamic model, equal resample weights(2)','error, Dynamic model, filtered resample weights')
+legend( ... % 'error, stationary model, block 0, equal resample weights','error, stationary model, block 0.3 w/range, equal resample weights',
+    'error, dynamic model, block 0, filtered resample weights','error, Dynamic model, block 0.3 w/ range, filtered resample weights')
 title(strcat(num2str(N), ' vehicle network, Error for CMM'))
 
 record_err
-%%
-close all
+%% Provide visualization for dynamic postions
+% close all
 % for each timestep, record position:
-for i = 1:100
-    figure;
-    for m = 1:N
-    % figure;
-    plot(position_dyn{i}(m,1),position_dyn{i}(m,2),'o');
-    xlabel('X/ m')
-    ylabel('Y/ m')
-    hold on;
-     % saveas(gcf,strcat('imge_', i))
-    end
-end
+% for i = 1:100
+%     figure;
+%     for m = 1:N
+%     % figure;
+%     plot(position_dyn{i}(m,1),position_dyn{i}(m,2),'o');
+%     xlabel('X/ m')
+%     ylabel('Y/ m')
+%     hold on;
+%      % saveas(gcf,strcat('imge_', i))
+%     end
+% end
 
+%%
+% close all;
+figure
+list_1 = distance_dyn{1,1}(:,1);
+hist(list_1)
+title('distance distribution')
+legend('timestep = 1')
+%
+figure;
+list_Ns = distance_dyn{1,Ns}(:,1);
+hist(list_Ns)
+title('distance distribution')
+legend('timestep = Ns')
+dis_in_ind
+%%
+% close all
+figure
+hold on;
+plot(pf_weight(Ns,:),'o-','linewidth',2)
+legend('last week','modified')
+title('pf-weight for particles from 24 vehicles at timestep 100')
+%(1)','pf-weight from 50 vehicles (2)')
 %%
 %  % load the images
 %  images    = cell(3,1);
@@ -354,22 +459,49 @@ end
 %  for u=1:length(images)
 %      % convert the image to a frame
 %      frame = im2frame(images{u});
-%      for v=1:secsPerImage(u) 
+%      for v=1:secsPerImage(u)
 %          writeVideo(writerObj, frame);
 %      end
 %  end
 %  % close the writer object
 %  close(writerObj);
+%%
 
-%% 
-for j = 1:Ns
-    ni = 1;
-    for i = 1:N
-        if distance_dyn{1,j}(i,1) < 12000
-            dis_in_ind{j,1}(ni,1) = i;
-            dis_in{j,1}(ni,1) = distance_dyn{1,56}(i,1);
-            ni = ni + 1;
-        end
-    end
+%             num_block = 0;
+%             num_block_drop = zeros(N,0);
+%             for k=1:N
+%                 % add counter for block_prob dropped particles
+%                 num_block_drop(k) = 0;
+%                 if rand <= block_prob
+%                     num_block = num_block+1;
+%                     num_block_drop(k) = num_block_drop(k) + num_block;
+%                 end
+%             end
+
+
+%% plot actual positions vs est positions
+
+for i = 1:Ns
+    mu_x(i) = mu_step{i}(1);
+    mu_y(i) = mu_step{i}(2);
 end
-dis_in_ind
+m = 1:Ns;
+figure;
+plot3(m,mu_x,mu_y,'o-.');
+grid on;
+hold on;
+plot3(1,mu_x(1),mu_y(1),'.k','markersize',25)
+plot3(Ns,mu_x(Ns),mu_y(Ns),'.r','markersize',25)
+xlabel('time step')
+ylabel('mu_x/m')
+zlabel('mu_y/m')
+
+for i = 1:Ns
+    usrenu_x(i) = usrenu{1}(i,1);
+    usrenu_y(i) = usrenu{1}(i,2);
+end
+
+hold on
+% usrenu{1}
+plot3(m,usrenu_x,usrenu_y,'o-.r')
+legend('esti position','est start','est end','actual positon')
